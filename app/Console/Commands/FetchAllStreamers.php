@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Jobs\CheckStreamer;
+
 
 class FetchAllStreamers extends Command
 {
@@ -11,7 +13,7 @@ class FetchAllStreamers extends Command
      *
      * @var string
      */
-    protected $signature = 'streamers:all';
+    protected $signature = 'streamer:all';
 
     /**
      * The console command description.
@@ -37,6 +39,9 @@ class FetchAllStreamers extends Command
      */
     public function handle()
     {
-        //
+        // Check streamer by channel id
+        //$channel = 'UCo8wWQvRSoKL57vjv4vyXQw'; // CaptainContent
+        $channel = 'UCQXD6LaVAICsyam10YjsUSw'; // Atila
+        CheckStreamer::dispatch($channel);
     }
 }
