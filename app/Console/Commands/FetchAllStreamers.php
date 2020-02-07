@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Jobs\CheckStreamer;
-
+use App\Models\Channel;
 
 class FetchAllStreamers extends Command
 {
@@ -41,7 +41,9 @@ class FetchAllStreamers extends Command
     {
         // Check streamer by channel id
         //$channel = 'UCo8wWQvRSoKL57vjv4vyXQw'; // CaptainContent
-        $channel = 'UCQXD6LaVAICsyam10YjsUSw'; // Atila
+        //$channel = 'UCQXD6LaVAICsyam10YjsUSw'; // Atila
+        //$channel = 'UCkxWbMzSZ07ruHOX5-v0Asg'; // OUMB
+        $channel = Channel::find(1);
         CheckStreamer::dispatch($channel);
     }
 }
