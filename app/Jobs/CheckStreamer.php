@@ -3,7 +3,9 @@
 namespace App\Jobs;
 
 use Alaouy\Youtube\Facades\Youtube;
+use App\Events\StreamingUrlChanged;
 use App\Exceptions\StreamerNotLiveException;
+use App\Models\History;
 use App\Services\YoutubeService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,7 +18,7 @@ class CheckStreamer implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $channel_id;
+    public $channel;
     public $service;
 
     /**
@@ -24,9 +26,9 @@ class CheckStreamer implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($channel_id)
+    public function __construct($channel)
     {
-        $this->channel_id = $channel_id;
+        $this->channel = $channel;
     }
 
     /**
@@ -39,13 +41,26 @@ class CheckStreamer implements ShouldQueue
         $this->service = new YoutubeService;
 
         try {
-            $videoId = $this->service->getCurrentVideoIdByChannel($this->channel_id);
+            $videoId = $this->service->getCurrentVideoIdByChannel($this->channel->channelId);
 
-            $duration = $this->service->getVideoDurationById($videoId);
-            
-            dd($this->channel_id, $videoId, $duration);
+            $latest = History::latestLink($this->channel->id);
+    
+            if(!$latest || $latest->key !== $videoId) {
+
+                $duration = $this->service->getVideoDurationById($videoId);
+
+                $this->fireEvent([
+                    'videoId'   => $videoId,
+                    'duration'  => $duration,
+                    'channelId' => $this->channel->id,
+                    'providerId' => $this->channel->provider_id,
+                ]);
+
+                return;
+            }
+            Log::info("URL hasn't changed.  Will continue monitoring", [$this->channel, $videoId]);
         } catch(StreamerNotLiveException $e) {
-            Log::info("The channel isn't currently live.", ['channelId' => $this->channel_id]);
+            Log::info("The channel isn't currently live.", ['channelId' => $this->channel]);
             // Remove job from queue
             $this->delete();
         } catch (\Exception $e) {
@@ -53,4 +68,8 @@ class CheckStreamer implements ShouldQueue
         }
     }
 
+    protected function fireEvent($params)
+    {
+        event(new StreamingUrlChanged($params));
+    }
 }

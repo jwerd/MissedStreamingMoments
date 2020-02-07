@@ -9,6 +9,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class StreamingUrlChanged
 {
@@ -19,9 +20,13 @@ class StreamingUrlChanged
      *
      * @return void
      */
-    public function __construct()
+    public $event;
+
+    public function __construct($event)
     {
         //
+        $this->event = $event;
+        Log::info('StreamingUrlChanged Event Fired');
     }
 
     /**
