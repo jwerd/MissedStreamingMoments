@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Alaouy\Youtube\Facades\Youtube;
 use Illuminate\Console\Command;
 use App\Jobs\CheckStreamer;
 use App\Models\Channel;

@@ -4,30 +4,40 @@ namespace App\Services;
 
 use Alaouy\Youtube\Facades\Youtube;
 use App\Exceptions\StreamerNotLiveException;
+use GuzzleHttp\Exception\GuzzleException;
 
 class YoutubeService
 {
-    public $params = [
-        'type'      => 'video',
-        'eventType' => 'live',
-        'maxResults'=> 1,
-        'part'      => 'snippet',
-    ];
+    public $client;
+
+    public $videos = 'https://www.youtube.com/channel/%s/videos?pbj=1';
 
     public $videoId;
 
     public function __construct()
     {
-        
+        $this->client = new \GuzzleHttp\Client();
     }
 
-    public function getByChannel($channelId)
+    public function getChannel($channelId)
     {
-        $params = array_merge($this->params, [
-            'channelId' => $channelId,
-        ]);
-        
-        return $this->search($params);
+        try {
+            dump(sprintf($this->videos, $channelId));
+            $response = $this->client->request('GET', sprintf($this->videos, $channelId), [
+                'headers' => [
+                    'X-YouTube-Client-Name'    => 1,
+                    'X-YouTube-Client-Version' => '2.20200211.02.00',
+                ]
+            ]);
+            $json = json_decode($response->getBody()->getContents());
+            dd($json[1]->response
+            ->contents
+            ->twoColumnBrowseResultsRenderer
+            ->tabs[1]);
+        } catch(GuzzleException $e) {
+            dd($e->getMessage());
+        }
+
     }
 
     public function getCurrentVideoIdByChannel($channelId)
@@ -54,7 +64,8 @@ class YoutubeService
 
     protected function search($params)
     {
-        $search = Youtube::searchAdvanced($params);
+
+        $search = Youtube::getActivitiesByChannelId($params);
         if(!$search || count($search) === 0) {
             throw new StreamerNotLiveException();
         }

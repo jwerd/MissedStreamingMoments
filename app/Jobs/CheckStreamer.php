@@ -41,18 +41,18 @@ class CheckStreamer implements ShouldQueue
         $this->service = new YoutubeService;
 
         try {
-            $videoId = $this->service->getCurrentVideoIdByChannel($this->channel->channelId);
-
+            //$videoId = $this->service->getCurrentVideoIdByChannel($this->channel->channelId);
+            $this->service->getChannel("UC229CRwYN8oJ_2_rBN-7wwg");
             $latest = History::latestLink($this->channel->id);
     
             if(!$latest || $latest->key !== $videoId) {
 
-                $duration = $this->service->getVideoDurationById($videoId);
+                //$duration = $this->service->getVideoDurationById($videoId);
 
                 $this->fireEvent([
-                    'videoId'   => $videoId,
-                    'duration'  => $duration,
-                    'channelId' => $this->channel->id,
+                    'videoId'    => $videoId,
+                    'duration'   => $duration,
+                    'channelId'  => $this->channel->id,
                     'providerId' => $this->channel->provider_id,
                 ]);
 
@@ -70,6 +70,6 @@ class CheckStreamer implements ShouldQueue
 
     protected function fireEvent($params)
     {
-        event(new StreamingUrlChanged($params));
+        //event(new StreamingUrlChanged($params));
     }
 }
