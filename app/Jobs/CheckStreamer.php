@@ -42,7 +42,7 @@ class CheckStreamer implements ShouldQueue
 
         try {
             //$videoId = $this->service->getCurrentVideoIdByChannel($this->channel->channelId);
-            $this->service->getChannel("UC229CRwYN8oJ_2_rBN-7wwg");
+            dd($this->service->getChannel("UCo8wWQvRSoKL57vjv4vyXQw"));
             $latest = History::latestLink($this->channel->id);
     
             if(!$latest || $latest->key !== $videoId) {

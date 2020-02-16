@@ -29,11 +29,46 @@ class YoutubeService
                     'X-YouTube-Client-Version' => '2.20200211.02.00',
                 ]
             ]);
+            $return = [];
             $json = json_decode($response->getBody()->getContents());
-            dd($json[1]->response
+            $tabs = $json[1]->response
             ->contents
             ->twoColumnBrowseResultsRenderer
-            ->tabs[1]);
+            ->tabs;
+
+            foreach($tabs as $tab) {
+                if(isset($tab->tabRenderer->content->sectionListRenderer->contents)) {
+                    $contents = $tab->tabRenderer->content->sectionListRenderer->contents;
+                    foreach($contents as $content) {
+                        if(isset($content->itemSectionRenderer->contents)) {
+                            $contentsStep2 = $content->itemSectionRenderer->contents;
+                            foreach($contentsStep2 as $content) {
+                                if(isset($content->gridRenderer->items)) {
+                                    $contentStep3 = $content->gridRenderer->items;
+                                    foreach($contentStep3 as $content) {
+                                        if(isset($content->gridVideoRenderer)) {
+                                            $video = $content->gridVideoRenderer;
+
+                                            foreach($video->viewCountText->runs as $run) {
+                                                if(stristr($run->text, "watching")) {
+                                                    $return = [
+                                                        'title'   => $video->title->simpleText,
+                                                        'videoId' => $video->videoId,
+                                                        'isLive'  => true,
+                                                    ];
+                                                    return $return;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return $return;
         } catch(GuzzleException $e) {
             dd($e->getMessage());
         }
