@@ -41,19 +41,24 @@ class CheckStreamer implements ShouldQueue
         $this->service = new YoutubeService;
 
         try {
-            //$videoId = $this->service->getCurrentVideoIdByChannel($this->channel->channelId);
-            dd($this->service->getChannel("UCo8wWQvRSoKL57vjv4vyXQw"));
-            $latest = History::latestLink($this->channel->id);
-    
+            $channel = $this->service->getChannel("UCkxWbMzSZ07ruHOX5-v0Asg");
+            $latest  = History::latestLink($this->channel->id)->first();
+            
+            if(count($channel) === 0) {
+                throw new StreamerNotLiveException;
+            }
+
+            $videoId = $channel['videoId'];
+
             if(!$latest || $latest->key !== $videoId) {
 
                 //$duration = $this->service->getVideoDurationById($videoId);
 
                 $this->fireEvent([
-                    'videoId'    => $videoId,
-                    'duration'   => $duration,
-                    'channelId'  => $this->channel->id,
-                    'providerId' => $this->channel->provider_id,
+                    'previousVideo' => $latest,
+                    'videoId'       => $videoId,
+                    'channelId'     => $this->channel->id,
+                    'providerId'    => $this->channel->provider_id,
                 ]);
 
                 return;
@@ -65,11 +70,12 @@ class CheckStreamer implements ShouldQueue
             $this->delete();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+            $this->delete();
         }
     }
 
     protected function fireEvent($params)
     {
-        //event(new StreamingUrlChanged($params));
+        event(new StreamingUrlChanged($params));
     }
 }

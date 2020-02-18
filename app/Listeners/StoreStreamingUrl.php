@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Models\History;
+use App\Services\YoutubeService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,13 @@ class StoreStreamingUrl
      */
     public function handle($event)
     {
+        // @todo: move this to a interface so we can support other services
+        $this->service = new YoutubeService;
+
+        dd($event->event['previousVideo']->id);
+
+        dd($this->service->getVideoDetailsById($videoId));
+    
         // Update final duration
         
         Log::info('Storing Streaming Url', [$event]);

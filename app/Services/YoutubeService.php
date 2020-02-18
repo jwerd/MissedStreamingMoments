@@ -70,7 +70,7 @@ class YoutubeService
 
             return $return;
         } catch(GuzzleException $e) {
-            dd($e->getMessage());
+            //dd($e->getMessage());
         }
 
     }
