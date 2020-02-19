@@ -31,6 +31,8 @@ class StoreStreamingUrl
         // @todo: move this to a interface so we can support other services
         $this->service = new YoutubeService;
 
+        
+
         dd($event->event['previousVideo']->id);
 
         dd($this->service->getVideoDetailsById($videoId));

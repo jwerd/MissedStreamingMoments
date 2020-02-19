@@ -44,7 +44,11 @@ class FetchAllStreamers extends Command
         //$channel = 'UCo8wWQvRSoKL57vjv4vyXQw'; // CaptainContent
         //$channel = 'UCQXD6LaVAICsyam10YjsUSw'; // Atila
         //$channel = 'UCkxWbMzSZ07ruHOX5-v0Asg'; // OUMB
-        $channel = Channel::find(1);
-        CheckStreamer::dispatch($channel);
+
+        $channels = Channel::get();
+
+        $channels->map(function ($channel) {
+            CheckStreamer::dispatch($channel);
+        });
     }
 }

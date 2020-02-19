@@ -48,15 +48,16 @@ class YoutubeService
                                     foreach($contentStep3 as $content) {
                                         if(isset($content->gridVideoRenderer)) {
                                             $video = $content->gridVideoRenderer;
-
-                                            foreach($video->viewCountText->runs as $run) {
-                                                if(stristr($run->text, "watching")) {
-                                                    $return = [
-                                                        'title'   => $video->title->simpleText,
-                                                        'videoId' => $video->videoId,
-                                                        'isLive'  => true,
-                                                    ];
-                                                    return $return;
+                                            if(isset($video->viewCountText->runs)) {
+                                                foreach($video->viewCountText->runs as $run) {
+                                                    if(stristr($run->text, "watching")) {
+                                                        $return = [
+                                                            'title'   => $video->title->simpleText,
+                                                            'videoId' => $video->videoId,
+                                                            'isLive'  => true,
+                                                        ];
+                                                        return $return;
+                                                    }
                                                 }
                                             }
                                         }

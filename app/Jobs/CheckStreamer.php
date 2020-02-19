@@ -9,6 +9,7 @@ use App\Models\History;
 use App\Services\YoutubeService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -41,14 +42,18 @@ class CheckStreamer implements ShouldQueue
         $this->service = new YoutubeService;
 
         try {
-            $channel = $this->service->getChannel("UCkxWbMzSZ07ruHOX5-v0Asg");
-            $latest  = History::latestLink($this->channel->id)->first();
+            // Get our channel
+            $channel = $this->service->getChannel($this->channel->channelId);
             
             if(count($channel) === 0) {
                 throw new StreamerNotLiveException;
             }
 
+            $latest  = History::latestLink($this->channel->id);
+
             $videoId = $channel['videoId'];
+
+            $history = History::where('key', $videoId)->firstOrFail();
 
             if(!$latest || $latest->key !== $videoId) {
 
@@ -67,6 +72,14 @@ class CheckStreamer implements ShouldQueue
         } catch(StreamerNotLiveException $e) {
             Log::info("The channel isn't currently live.", ['channelId' => $this->channel]);
             // Remove job from queue
+            $this->delete();
+        } catch(ModelNotFoundException $e) {
+            Log::info("The currentl stream isn't stored yet.  Adding it.", ['channelId' => $this->channel, 'videoId' => $videoId]);
+            History::create([
+                'key'         => $videoId,
+                'channel_id'  => $this->channel->id,
+                'provider_id' => $this->channel->provider_id
+            ]);
             $this->delete();
         } catch (\Exception $e) {
             Log::error($e->getMessage());
